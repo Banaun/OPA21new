@@ -19,11 +19,22 @@ public class Main {
         });
 
         app.get("/rest/users/:username", (req, res) -> {
-           String username = req.params("username");
+            String username = req.params("username");
 
-           User user = db.getUserByUsername(username);
+            User user = db.getUserByUsername(username);
 
-           res.json(user);
+            res.json(user);
+        });
+
+        app.post("/rest/users/login", (req, res) -> {
+            User user = req.body(User.class);
+
+            if (db.validateUser(user) == true) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
         });
 
         app.post("/rest/users", (req, res) -> {

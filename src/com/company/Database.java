@@ -5,6 +5,7 @@ import nosqlite.utilities.Utils;
 
 import java.sql.*;
 import java.util.List;
+import java.util.Objects;
 
 public class Database {
 
@@ -38,6 +39,26 @@ public class Database {
         }
 
         return user;
+    }
+
+    public boolean validateUser(User user) {
+
+        try {
+            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM Users");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                if (Objects.equals(user.getUsername(), rs.getString("username"))) {
+                    if (Objects.equals(user.getPassword(), rs.getString("password"))) {
+                        return true;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
     }
 
     public List<User> getUsers() {

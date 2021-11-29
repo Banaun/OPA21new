@@ -33,7 +33,7 @@ function changePage() {
       // That means we are at the startpage thus renderLoginPage
       renderLoginPage();
       const loginForm = document.querySelector("#form-login");
-      loginForm.addEventListener("submit", authenticateUser);
+      loginForm.addEventListener("submit", logIn);
   }
 }
 
@@ -45,7 +45,7 @@ let authUsername; // here we will save the logged in username
 let authPassword; // here we will save the logged in user's password
 let users = [];
 
-async function authenticateUser(event) {
+/*async function authenticateUser(event) {
   event.preventDefault();
   
   let uname = document.getElementById("username").value;
@@ -71,6 +71,47 @@ async function authenticateUser(event) {
     }
     alert("Wrong username and/or password.");
     document.getElementById("form-login").reset();
+  }
+}*/
+
+async function logIn(event) {
+  event.preventDefault();
+  
+  let uname = document.getElementById("username").value;
+  let pwd = document.getElementById("password").value;
+
+  if (uname == '') {
+    alert("Please enter a username.");
+    return;
+  }
+  else if (pwd == '') {
+    alert("Please enter a password.")
+    return;
+  }
+
+  let user = {
+    username: uname,
+    password: pwd
+  };
+
+  let result = await fetch("/rest/users/login", {
+    method: "POST",
+    body: JSON.stringify(user)
+  });
+
+  let continueWithLogIn = await result.text();
+
+  if (continueWithLogIn == 'true') {
+    loggedIn = true;
+    authUsername = uname;
+    authPassword = pwd;
+    alert("Login successful.");
+    goToPage("/#profile-settings");
+  }
+  else {
+    alert("Wrong username and/or password.");
+    document.getElementById("form-login").reset();
+    return;
   }
 }
 
