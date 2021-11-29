@@ -3,8 +3,9 @@ let headerTag = document.querySelector("#page-header");
 let formContainer = document.querySelector("#form-container");
 let allUsersContainer = document.querySelector("#all-users-container");
 let loggedIn = false;
-onhashchange = changePage; // vid varje ändring av hash i URL:en
-changePage(); // vid inladdning av sidan
+
+onhashchange = changePage; 
+changePage(); 
 function changePage() {
   let page = location.hash.replace("#", "");
   console.log("redirected to page: " + page);
@@ -18,7 +19,7 @@ function changePage() {
     case "profile-settings":
       if (loggedIn == true) {
         renderProfileSettingsPage();
-        const profileSettingsForm = document.querySelector("#form-profile-settings");
+        const profileSettingsForm = document.querySelector("#form-change-password");
         profileSettingsForm.addEventListener("submit", changePassword);
         break;
       }
@@ -44,13 +45,9 @@ let authUsername; // here we will save the logged in username
 let authPassword; // here we will save the logged in user's password
 let users = [];
 
-// TODO: JAVA EXPRESS REQUEST 1
 async function authenticateUser(event) {
   event.preventDefault();
-  // Write request to Java Express server to get a response back if login was successful
-  // If YES, change page to "#profile-settings" with:   goToPage("/#profile-settings");
-  //    Also, store the username and password to the variables declared above this function in order for the program to remember them
-  // If NO, maybe use an:                               alert("Insert Server Message response here");
+  
   let uname = document.getElementById("username").value;
   let pwd = document.getElementById("password").value;
   await getAllUsers();
@@ -74,18 +71,14 @@ async function authenticateUser(event) {
     }
     alert("Wrong username and/or password.");
     document.getElementById("form-login").reset();
-    console.log(uname + ' ' + pwd);
   }
 }
 
-// TODO: JAVA EXPRESS REQUEST 2
 async function createAccount(event) {
   event.preventDefault();
-  // Write request to Java Express server to create new account
-  // If account already exists and request failed, alert the user of this
-  // If account was successfully created, change page to:  location.href = "/#profile-settings";
 
   console.log("createAccount clicked");
+
   let uname = document.getElementById("username").value;
   let pwd = document.getElementById("password").value;
   let continueWithCreation = true;
@@ -128,6 +121,8 @@ async function createAccount(event) {
 
     console.log(await result.text());
     loggedIn = true;
+    authUsername = uname;
+    authPassword = pwd;
     goToPage("/#profile-settings");
   }
 }
@@ -138,11 +133,8 @@ function logOut() {
   loggedIn = false;
 }
 
-// TODO: JAVA EXPRESS REQUEST 3
 async function changePassword(event) {
   event.preventDefault();
-  // Write request to Java Express server to change current user's password in the database
-  // Use an:    alert("Password successfully changed")
 
   console.log("change password event");
 
@@ -166,22 +158,23 @@ async function changePassword(event) {
       });
       alert("Password has been updated.");
       authPassword = newPwd;
-      console.log(authPassword);
-      document.getElementById("form-profile-settings").reset();
+      document.getElementById("form-change-password").reset();
     }
   }
   else {
     alert("Wrong password!");
-    document.getElementById("form-profile-settings").reset();
+    document.getElementById("form-change-password").reset();
   }
 }
 
-// TODO: JAVA EXPRESS REQUEST 4
 async function deleteAccount() {
-  // Delete the account you are currently logged in as through sending a request to Java Express Server
 
   console.log("Delete account clicked");
 
+  if (!confirm("Are you sure you want to delete your account?")) {
+    return;
+  }
+  
   let user = {
     username: authUsername,
     password: authPassword
@@ -197,12 +190,10 @@ async function deleteAccount() {
   goToPage("/");
 }
 
-// TODO: JAVA EXPRESS REQUEST 5
 async function peekAllUsers() {
-  // Send a request to the java express server to retrieve all the users from the database as JSON
-  // Then try to make them appear in the Profile-Settings page inside the '<section id="all-users-container"></section>'
 
   console.log("Peek All Users clicked");
+  
   await getAllUsers();
   renderUsers();
 }
@@ -223,13 +214,26 @@ function renderUsers() {
   `;
 
   for(let user of users) {
-    let userLi = `
-      <li class="user-list-object">
-        username: ${user.username} <br>
-        password: ${user.password} <br>  
-      </id><br>
-    `
+
+    if (user.username != authUsername && user.password != authPassword) {
+
+      let userLi = `
+        <li class="user-list-object">
+          username: ${user.username} <br>
+          password: ****** <br>  
+        </id><br>
+      `
     allUsersContainer.innerHTML += userLi;
+    }
+    else {
+      let userLi = `
+        <li class="user-list-object">
+          username: ${user.username} <br>
+          password: ${user.password} <br>  
+        </id><br>
+      `
+      allUsersContainer.innerHTML += userLi;
+    }
   }
   allUsersContainer.innerHTML += `
       <button id="btn-hide" onclick="renderProfileSettingsPage()">HIDE</button>
@@ -268,7 +272,7 @@ function renderProfileSettingsPage() {
   headerTag.innerHTML = "<h2>Profile Settings</h2>";
   formContainer.innerHTML = `
       <h2>Hello ${authUsername}! This is your settings page.</h2>
-      <form id="form-profile-settings">
+      <form id="form-change-password">
         <label for="password">Enter previous password</label><br />
         <input id="password" type="password" /><br />
         <label for="new-password">Enter new password</label><br />

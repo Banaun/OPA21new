@@ -121,6 +121,8 @@ async function createAccount(event) {
 
     console.log(await result.text());
     loggedIn = true;
+    authUsername = uname;
+    authPassword = pwd;
     goToPage("/#profile-settings");
   }
 }
@@ -169,6 +171,10 @@ async function deleteAccount() {
 
   console.log("Delete account clicked");
 
+  if (!confirm("Are you sure you want to delete your account?")) {
+    return;
+  }
+  
   let user = {
     username: authUsername,
     password: authPassword
